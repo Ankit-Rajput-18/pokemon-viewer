@@ -7,34 +7,37 @@ const BattleManager = ({ currentUserPokemon, currentEnemyPokemon, onRoundEnd, ro
   const [isFighting, setIsFighting] = useState(false);
   const [battleLog, setBattleLog] = useState([]);
   const [gameOver, setGameOver] = useState(false);
+  const [roundEnded, setRoundEnded] = useState(false); // ✅ NEW
 
   useEffect(() => {
+    // Reset battle state when new round starts
     setUserHP(100);
     setEnemyHP(100);
     setSelectedMove(null);
     setBattleLog([]);
     setGameOver(false);
+    setRoundEnded(false); // ✅ NEW
   }, [currentUserPokemon, currentEnemyPokemon]);
 
   useEffect(() => {
-    if (userHP <= 0 || enemyHP <= 0) {
+    if ((userHP <= 0 || enemyHP <= 0) && !roundEnded) {
       setGameOver(true);
+      setRoundEnded(true); // ✅ Prevent multiple triggers
+
+      const winner = userHP > enemyHP ? 'user' : 'enemy';
       setBattleLog((prev) => [
         ...prev,
         userHP <= 0
           ? `💀 ${currentUserPokemon.name} fainted!`
           : `🏆 ${currentEnemyPokemon.name} fainted!`,
+        `🎯 Winner: ${winner === 'user' ? 'Your Team' : 'Enemy Team'}`
       ]);
-    }
-  }, [userHP, enemyHP]);
 
-  useEffect(() => {
-    if (gameOver) {
       setTimeout(() => {
-        onRoundEnd();
-      }, 1500);
+        onRoundEnd(winner);
+      }, 1200);
     }
-  }, [gameOver, onRoundEnd]);
+  }, [userHP, enemyHP, roundEnded, currentUserPokemon, currentEnemyPokemon, onRoundEnd]);
 
   const handleAttackTurn = () => {
     if (!selectedMove || isFighting || gameOver) return;

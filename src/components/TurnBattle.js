@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
-const TurnBattle = ({ user, enemy, onBattleEnd }) => {
+const TurnBattle = ({ 
+  user, 
+  enemy, 
+  currentRound, 
+  userPoints, 
+  enemyPoints, 
+  setUserPoints, 
+  setEnemyPoints, 
+  onBattleEnd 
+}) => {
   const [userHP, setUserHP] = useState(100);
   const [enemyHP, setEnemyHP] = useState(100);
   const [log, setLog] = useState([]);
@@ -30,17 +39,27 @@ const TurnBattle = ({ user, enemy, onBattleEnd }) => {
     if (userHP <= 0 || enemyHP <= 0) {
       setBattleOver(true);
       const winner = userHP > enemyHP ? 'user' : 'enemy';
-      setLog(prev => [...prev, `🏆 ${winner === 'user' ? 'You win!' : 'Enemy wins!'}`]);
-      onBattleEnd(winner);
+      setLog(prev => [...prev, `🏆 ${winner === 'user' ? 'You win this round!' : 'Enemy wins this round!'}`]);
+
+      // Delay for suspense before updating points and ending battle
+      setTimeout(() => {
+        if (winner === 'user') {
+          setUserPoints(prev => prev + 1);
+        } else {
+          setEnemyPoints(prev => prev + 1);
+        }
+        onBattleEnd(winner);
+      }, 1200);
     }
-  }, [userHP, enemyHP, onBattleEnd]);
+  }, [userHP, enemyHP, onBattleEnd, setUserPoints, setEnemyPoints]);
 
   return (
     <div className="bg-gray-900 text-white p-4 rounded-lg shadow-lg max-w-md mx-auto">
-      <h2 className="text-xl font-bold mb-4 text-center">⚔️ Turn-Based Battle</h2>
+      <h2 className="text-xl font-bold mb-2 text-center">⚔️ Turn-Based Battle</h2>
+      <p className="text-center text-sm mb-4">🎯 Round {currentRound}</p>
 
-      <div className="flex justify-between mb-4">
-        <div className="text-center">
+      <div className="flex justify-between mb-4 text-center">
+        <div>
           <img src={user.image} alt={user.name} className="w-20 h-20 mx-auto mb-1" />
           <p className="capitalize font-semibold">{user.name}</p>
           <div className="w-24 h-2 bg-red-200 rounded">
@@ -50,9 +69,10 @@ const TurnBattle = ({ user, enemy, onBattleEnd }) => {
             />
           </div>
           <p className="text-sm mt-1">{userHP} HP</p>
+          <p className="text-xs mt-1">Your Team Points: {userPoints}</p>
         </div>
 
-        <div className="text-center">
+        <div>
           <img src={enemy.image} alt={enemy.name} className="w-20 h-20 mx-auto mb-1" />
           <p className="capitalize font-semibold">{enemy.name}</p>
           <div className="w-24 h-2 bg-red-200 rounded">
@@ -62,6 +82,7 @@ const TurnBattle = ({ user, enemy, onBattleEnd }) => {
             />
           </div>
           <p className="text-sm mt-1">{enemyHP} HP</p>
+          <p className="text-xs mt-1">Enemy Team Points: {enemyPoints}</p>
         </div>
       </div>
 
@@ -75,7 +96,7 @@ const TurnBattle = ({ user, enemy, onBattleEnd }) => {
         Attack!
       </button>
 
-      <div className="mt-4 space-y-1 text-sm font-mono">
+      <div className="mt-4 space-y-1 text-sm font-mono max-h-40 overflow-y-auto">
         {log.map((entry, i) => (
           <div key={i}>{entry}</div>
         ))}
